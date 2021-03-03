@@ -97,7 +97,9 @@ public class JaversSqlAutoConfiguration {
         if (plugins != null) {
             plugins.forEach(plugin -> plugin.beforeAssemble(javersBuilder));
         }
-        return javersBuilder.build();
+        // javers does some checks against db with creating, but not releasing connections.
+        // this 'do in transaction' forces to release connection after we are done building javers instance
+        return new TransactionTemplate(transactionManager).execute(s -> javersBuilder.build());
     }
 
     @Bean(name = "SpringSecurityAuthorProvider")
